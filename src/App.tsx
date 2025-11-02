@@ -1,26 +1,40 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, lazy, Suspense } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
+import HomePage from './pages/HomePage';
+import Layout from './components/Layout';
 
-function App() {
+// Direct import for PhasePage
+import PhasePage from './pages/PhasePage';
+
+export const CodeContext = React.createContext<{
+  code: string;
+  setCode: (code: string) => void;
+}>({
+  code: 'int a = 5 + 2;',
+  setCode: () => {},
+});
+
+const App: React.FC = () => {
+  const [code, setCode] = useState('int a = 5 + 2;');
+  const location = useLocation();
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <ThemeProvider>
+      <CodeContext.Provider value={{ code, setCode }}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path=":phaseId" element={
+              <Suspense fallback={<div>Loading...</div>}>
+                <PhasePage />
+              </Suspense>
+            } />
+          </Route>
+        </Routes>
+      </CodeContext.Provider>
+    </ThemeProvider>
   );
-}
+};
 
 export default App;
